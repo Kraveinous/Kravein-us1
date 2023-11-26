@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        #word-display {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        #clue {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: #555;
+        }
+
+        #guesses-left {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        input {
+            padding: 5px;
+            margin-bottom: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+    </style>
+    <title>MysteryWord Game</title>
+</head>
+<body>
+    <div class="container">
+        <h1>MysteryWord Game</h1>
+        <p id="word-display"></p>
+        <p id="clue"></p>
+        <p id="guesses-left">Guesses Left: <span id="remaining-guesses">6</span></p>
+        <input type="text" id="guess-input" placeholder="Enter your guess">
+        <button onclick="makeGuess()">Submit Guess</button>
+        <button onclick="resetGame()">Reset Game</button>
+    </div>
+    <script>
+        const wordsWithClues = [
+            { word: 'console', clue: 'Text-based interface to interact with a computer' },
+            { word: 'variable', clue: 'A named storage location for data' },
+            { word: 'function', clue: 'A block of code designed to perform a task' },
+            { word: 'database', clue: 'Organized collection of structured data'}
+            // Add more words and clues as needed
+        ];
+
+        let selectedWord = '';
+        let wordDisplay = [];
+        let remainingGuesses = 6;
+        let guessedLetters = [];
+
+        function chooseRandomWord() {
+            const randomIndex = Math.floor(Math.random() * wordsWithClues.length);
+            selectedWord = wordsWithClues[randomIndex].word;
+            wordDisplay = Array(selectedWord.length).fill('_');
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            document.getElementById('word-display').textContent = wordDisplay.join(' ');
+            document.getElementById('clue').textContent = `Clue: ${wordsWithClues.find(item => item.word === selectedWord).clue}`;
+            document.getElementById('remaining-guesses').textContent = remainingGuesses;
+        }
+
+        function makeGuess() {
+            const guessInput = document.getElementById('guess-input');
+            const guess = guessInput.value.toLowerCase();
+
+            if (guess && guessedLetters.indexOf(guess) === -1) {
+                guessedLetters.push(guess);
+
+                let correctGuess = false;
+
+                if (selectedWord === guess) {
+                    alert(`Congratulations! You guessed the word "${selectedWord}".`);
+                    resetGame();
+                    return; // Exit the function to avoid decreasing guesses
+                }
+
+                if (selectedWord.includes(guess)) {
+                    for (let i = 0; i < selectedWord.length; i++) {
+                        if (selectedWord[i] === guess && wordDisplay[i] !== guess) {
+                            wordDisplay[i] = guess;
+                            correctGuess = true;
+                        }
+                    }
+                }
+
+                updateDisplay();
+
+                if (wordDisplay.join('') === selectedWord) {
+                    alert(`Congratulations! You guessed the word "${selectedWord}".`);
+                    resetGame();
+                    return; // Exit the function to avoid decreasing guesses
+                }
+
+                if (correctGuess) {
+                    alert(`Correct guess! Keep going.`);
+                } else {
+                    remainingGuesses--;
+                    checkGameStatus();
+                }
+            }
+
+            guessInput.value = '';
+        }
+
+        function checkGameStatus() {
+            if (remainingGuesses === 0) {
+                alert(`Game over! The word was "${selectedWord}".`);
+                resetGame();
+            } else {
+                // Reveal a new letter for each incorrect guess
+                for (let i = 0; i < selectedWord.length; i++) {
+                    if (wordDisplay[i] === '_' && Math.random() < 0.5) {
+                        wordDisplay[i] = selectedWord[i];
+                        updateDisplay();
+                        break;
+                    }
+                }
+            }
+        }
+
+        function resetGame() {
+            remainingGuesses = 6;
+            guessedLetters = [];
+            chooseRandomWord();
+        }
+
+        document.addEventListener('DOMContentLoaded', chooseRandomWord);
+    </script>
+</body>
+</html>
